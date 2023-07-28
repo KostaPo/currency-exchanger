@@ -9,5 +9,5 @@ https://zhukovsd.github.io/java-backend-learning-course/Projects/CurrencyExchang
 <ul>
  <li>Выполните команды: 'mvn clean', 'mvn install', 'mvn package'</li>
  <li>Скопируйте файл currency-exchanger-2.0.war из папки target на свой сервер</li>
- <li>Запустите программу командой: currency-exchanger-2.0.war</li>
+ <li>Запустите программу командой: 'jar -xvf currency-exchanger-2.0.war'</li>
 </ul>
