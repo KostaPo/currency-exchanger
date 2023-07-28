@@ -1,0 +1,14 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="currency-exchanger:war">
+    <output-path>$PROJECT_DIR$/target</output-path>
+    <properties id="maven-jee-properties">
+      <options>
+        <module>currency-exchanger</module>
+        <packaging>war</packaging>
+      </options>
+    </properties>
+    <root id="archive" name="currency-exchanger-2.0.war">
+      <element id="artifact" artifact-name="currency-exchanger:war exploded" />
+    </root>
+  </artifact>
+</component>
