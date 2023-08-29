@@ -1,11 +1,11 @@
 package ru.kostapo.servlets;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import ru.kostapo.dto.CurrencyResDTO;
-import ru.kostapo.dto.ExceptionResEDTO;
-import ru.kostapo.exceptions.BadParameterException;
-import ru.kostapo.exceptions.DatabaseException;
-import ru.kostapo.services.CurrencyService;
+import ru.kostapo.currency.dto.CurrencyResDTO;
+import ru.kostapo.common.ExceptionResDTO;
+import ru.kostapo.common.exceptions.BadParameterException;
+import ru.kostapo.common.exceptions.DatabaseException;
+import ru.kostapo.currency.CurrencyService;
 import ru.kostapo.utils.StringUtils;
 
 import javax.servlet.ServletConfig;
@@ -22,7 +22,6 @@ public class CurrencyServlet extends HttpServlet {
     private CurrencyService currencyService;
     private ObjectMapper objectMapper;
     private StringUtils stringUtils;
-
 
     @Override
     public void init(ServletConfig config) {
@@ -41,7 +40,7 @@ public class CurrencyServlet extends HttpServlet {
                 stringUtils.isCodeValid(code);
             } catch (BadParameterException ex) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                objectMapper.writeValue(response.getOutputStream(), new ExceptionResEDTO(ex.getMessage()));
+                objectMapper.writeValue(response.getOutputStream(), new ExceptionResDTO(ex.getMessage()));
             }
             Optional<CurrencyResDTO> currencyResponseDTO = currencyService.findByCode(code);
             if (currencyResponseDTO.isPresent()) {
@@ -49,14 +48,14 @@ public class CurrencyServlet extends HttpServlet {
                 objectMapper.writeValue(response.getOutputStream(), currencyResponseDTO.get());
             } else {
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                objectMapper.writeValue(response.getOutputStream(), new ExceptionResEDTO("ВАЛЮТА "+code+" НЕ НАЙДЕНА"));
+                objectMapper.writeValue(response.getOutputStream(), new ExceptionResDTO("ВАЛЮТА "+code+" НЕ НАЙДЕНА"));
             }
         } catch (DatabaseException ex) {
             response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
-            objectMapper.writeValue(response.getOutputStream(), new ExceptionResEDTO(ex.getMessage()));
+            objectMapper.writeValue(response.getOutputStream(), new ExceptionResDTO(ex.getMessage()));
         } catch (Exception ex) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            objectMapper.writeValue(response.getOutputStream(), new ExceptionResEDTO(ex.getMessage()));
+            objectMapper.writeValue(response.getOutputStream(), new ExceptionResDTO(ex.getMessage()));
         }
     }
 
@@ -71,14 +70,15 @@ public class CurrencyServlet extends HttpServlet {
                 response.sendRedirect(request.getContextPath() + "/currencies");
             } catch (NumberFormatException e) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                objectMapper.writeValue(response.getOutputStream(), new ExceptionResEDTO("НЕ ВЕРНО УКАЗАН ID ВАЛЮТЫ"));
+                objectMapper.writeValue(response.getOutputStream(), new ExceptionResDTO("НЕ ВЕРНО УКАЗАН ID ВАЛЮТЫ"));
             }
         } catch (DatabaseException ex) {
             response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
-            objectMapper.writeValue(response.getOutputStream(), new ExceptionResEDTO(ex.getMessage()));
+            objectMapper.writeValue(response.getOutputStream(), new ExceptionResDTO(ex.getMessage()));
         } catch (Exception ex) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            objectMapper.writeValue(response.getOutputStream(), new ExceptionResEDTO(ex.getMessage()));
+            objectMapper.writeValue(response.getOutputStream(), new ExceptionResDTO(ex.getMessage()));
         }
     }
+
 }

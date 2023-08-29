@@ -2,14 +2,13 @@ package ru.kostapo.services;
 
 import ru.kostapo.dto.CurrencyReqDTO;
 import ru.kostapo.dto.CurrencyResDTO;
-import ru.kostapo.exceptions.BadParameterException;
-import ru.kostapo.exceptions.DatabaseException;
-import ru.kostapo.mappers.CurrencyMapper;
-import ru.kostapo.models.Currency;
-import ru.kostapo.repositories.CurrencyRepository;
+import ru.kostapo.common.exceptions.BadParameterException;
+import ru.kostapo.currency.CurrencyMapper;
+import ru.kostapo.currency.Currency;
+import ru.kostapo.currency.CurrencyRepository;
 import ru.kostapo.utils.StringUtils;
 
-import java.sql.SQLException;
+import java.sql.Connection;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,8 +18,8 @@ public class CurrencyServiceImpl implements CurrencyService {
     private final CurrencyMapper currencyMapper;
     private final StringUtils stringUtils;
 
-    public CurrencyServiceImpl() {
-        this.currencyRepository = new CurrencyRepository();
+    public CurrencyServiceImpl(Connection connection) {
+        this.currencyRepository = new CurrencyRepository(connection);
         this.currencyMapper = new CurrencyMapper();
         this.stringUtils = new StringUtils();
     }
@@ -67,11 +66,6 @@ public class CurrencyServiceImpl implements CurrencyService {
     }
 
     @Override
-    public boolean isContain(String code) {
-        return currencyRepository.isContain(code);
-    }
-
-    @Override
     public boolean isRequestDataValid(CurrencyReqDTO currencyReqDTO) {
         if(currencyReqDTO.getCode() == null
                 || currencyReqDTO.getName() == null
@@ -88,4 +82,5 @@ public class CurrencyServiceImpl implements CurrencyService {
             throw new BadParameterException("ОТСУТСТВУЕТ НУЖНОЕ ПОЛЕ ФОРМЫ (Name не валидный)");
         return true;
     }
+
 }

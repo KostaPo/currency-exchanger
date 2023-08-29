@@ -2,7 +2,6 @@ package ru.kostapo.dto;
 
 import lombok.*;
 
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

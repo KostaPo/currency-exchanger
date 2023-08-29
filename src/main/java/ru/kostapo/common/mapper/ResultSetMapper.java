@@ -3,11 +3,11 @@ package ru.kostapo.mappers;
 import ru.kostapo.models.Currency;
 import ru.kostapo.models.ExchangeRate;
 
-import java.math.RoundingMode;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class ResultSetMapper {
+
     public static Currency toCurrency(ResultSet resultSet) {
         try {
             return new Currency(
@@ -31,4 +31,5 @@ public class ResultSetMapper {
             throw new RuntimeException(e);
         }
     }
+
 }

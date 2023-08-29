@@ -2,14 +2,11 @@ package ru.kostapo.servlets;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ru.kostapo.dto.ExceptionResEDTO;
-import ru.kostapo.dto.ExchangeRateReqDTO;
 import ru.kostapo.dto.ExchangeReqDTO;
 import ru.kostapo.dto.ExchangeResDTO;
-import ru.kostapo.exceptions.BadParameterException;
-import ru.kostapo.exceptions.DatabaseException;
-import ru.kostapo.exceptions.NotFoundException;
-import ru.kostapo.services.CurrencyService;
-import ru.kostapo.services.ExchangeRateService;
+import ru.kostapo.common.exceptions.BadParameterException;
+import ru.kostapo.common.exceptions.DatabaseException;
+import ru.kostapo.common.exceptions.NotFoundException;
 import ru.kostapo.services.ExchangeService;
 import ru.kostapo.utils.StringUtils;
 
@@ -49,11 +46,9 @@ public class ExchangeServlet extends HttpServlet {
                 objectMapper.writeValue(response.getOutputStream(), new ExceptionResEDTO(ex.getMessage()));
             }
             try {
-                Optional<ExchangeResDTO> responseDTO = exchangeService.getExchange(requestDTO);
-                if (responseDTO.isPresent()) {
-                    response.setStatus(HttpServletResponse.SC_OK);
-                    objectMapper.writeValue(response.getOutputStream(), responseDTO.get());
-                }
+                ExchangeResDTO responseDTO = exchangeService.getExchange(requestDTO);
+                response.setStatus(HttpServletResponse.SC_OK);
+                objectMapper.writeValue(response.getOutputStream(), responseDTO);
             } catch (NotFoundException ex) {
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 objectMapper.writeValue(response.getOutputStream(), new ExceptionResEDTO(ex.getMessage()));

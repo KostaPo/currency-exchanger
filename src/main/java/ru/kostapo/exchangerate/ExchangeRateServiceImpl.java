@@ -2,12 +2,13 @@ package ru.kostapo.services;
 
 import ru.kostapo.dto.ExchangeRateReqDTO;
 import ru.kostapo.dto.ExchangeRateResDTO;
-import ru.kostapo.exceptions.BadParameterException;
+import ru.kostapo.common.exceptions.BadParameterException;
 import ru.kostapo.mappers.ExchangeRateMapper;
 import ru.kostapo.models.ExchangeRate;
 import ru.kostapo.repositories.ExchangeRateRepository;
 import ru.kostapo.utils.StringUtils;
 
+import java.sql.Connection;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,9 +19,9 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
 
     private final StringUtils stringUtils;
 
-    public ExchangeRateServiceImpl() {
-        this.exchangeRateRepository = new ExchangeRateRepository();
-        this.exchangeRateMapper = new ExchangeRateMapper();
+    public ExchangeRateServiceImpl(Connection connection) {
+        this.exchangeRateRepository = new ExchangeRateRepository(connection);
+        this.exchangeRateMapper = new ExchangeRateMapper(connection);
         this.stringUtils = new StringUtils();
     }
 
@@ -72,11 +73,6 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
     }
 
     @Override
-    public boolean isContain(String base, String target) {
-        return exchangeRateRepository.isContain(base, target);
-    }
-
-    @Override
     public boolean isRequestDataValid(ExchangeRateReqDTO exchangeRateReqDTO) {
         if(exchangeRateReqDTO.getRate() == null)
             throw new BadParameterException("ОТСУТСТВУЕТ НУЖНОЕ ПОЛЕ ФОРМЫ");
@@ -86,4 +82,5 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
             throw new BadParameterException("ОТСУТСТВУЕТ НУЖНОЕ ПОЛЕ ФОРМЫ (TargetCurrencyCode не валидный)");
         return true;
     }
+
 }

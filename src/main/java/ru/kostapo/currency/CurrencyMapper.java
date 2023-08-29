@@ -5,14 +5,14 @@ import org.modelmapper.PropertyMap;
 import org.modelmapper.TypeToken;
 import ru.kostapo.dto.CurrencyReqDTO;
 import ru.kostapo.dto.CurrencyResDTO;
-import ru.kostapo.models.Currency;
+import ru.kostapo.currency.Currency;
 
 import java.lang.reflect.Type;
 import java.util.List;
 
 public class CurrencyMapper {
 
-    public CurrencyResDTO toDTO (Currency currency) {
+    public CurrencyResDTO toDTO(Currency currency) {
         ModelMapper modelMapper = getMapper();
         modelMapper.addMappings(new PropertyMap<Currency, CurrencyResDTO>() {
             protected void configure() {
@@ -21,17 +21,20 @@ public class CurrencyMapper {
         });
         return modelMapper.map(currency, CurrencyResDTO.class);
     }
-    public List<CurrencyResDTO> toDtoList (List<Currency> currencies) {
+
+    public List<CurrencyResDTO> toDtoList(List<Currency> currencies) {
         ModelMapper modelMapper = getMapper();
         modelMapper.addMappings(new PropertyMap<Currency, CurrencyResDTO>() {
             protected void configure() {
                 map().setName(source.getFullName());
             }
         });
-        Type listType = new TypeToken<List<CurrencyResDTO>>() {}.getType();
+        Type listType = new TypeToken<List<CurrencyResDTO>>() {
+        }.getType();
         return modelMapper.map(currencies, listType);
     }
-    public Currency toModel (CurrencyReqDTO currencyReqDTO) {
+
+    public Currency toModel(CurrencyReqDTO currencyReqDTO) {
         ModelMapper modelMapper = getMapper();
         modelMapper.addMappings(new PropertyMap<CurrencyReqDTO, Currency>() {
             protected void configure() {
@@ -41,7 +44,8 @@ public class CurrencyMapper {
         });
         return modelMapper.map(currencyReqDTO, Currency.class);
     }
-    private ModelMapper getMapper(){
+
+    private ModelMapper getMapper() {
         return new ModelMapper();
     }
 }

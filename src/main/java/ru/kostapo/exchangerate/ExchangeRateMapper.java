@@ -9,18 +9,18 @@ import ru.kostapo.services.CurrencyService;
 import ru.kostapo.services.CurrencyServiceImpl;
 
 import java.lang.reflect.Type;
+import java.sql.Connection;
 import java.util.List;
 
 public class ExchangeRateMapper {
 
     private final CurrencyService currencyService;
 
-    public ExchangeRateMapper() {
-        this.currencyService = new CurrencyServiceImpl();
+    public ExchangeRateMapper(Connection connection) {
+        this.currencyService = new CurrencyServiceImpl(connection);
     }
 
-
-    public ExchangeRateResDTO toDTO (ExchangeRate exchangeRate) {
+    public ExchangeRateResDTO toDTO(ExchangeRate exchangeRate) {
         ModelMapper modelMapper = new ModelMapper();
         modelMapper.addConverter(new AbstractConverter<Integer, CurrencyResDTO>() {
             @Override
@@ -30,7 +30,8 @@ public class ExchangeRateMapper {
         });
         return modelMapper.map(exchangeRate, ExchangeRateResDTO.class);
     }
-    public List<ExchangeRateResDTO> toDtoList (List<ExchangeRate> exchangeRates) {
+
+    public List<ExchangeRateResDTO> toDtoList(List<ExchangeRate> exchangeRates) {
         ModelMapper modelMapper = new ModelMapper();
         modelMapper.addConverter(new AbstractConverter<Integer, CurrencyResDTO>() {
             @Override
@@ -38,11 +39,12 @@ public class ExchangeRateMapper {
                 return currencyService.findById(source).orElse(null);
             }
         });
-        Type listType = new TypeToken<List<ExchangeRateResDTO>>() {}.getType();
+        Type listType = new TypeToken<List<ExchangeRateResDTO>>() {
+        }.getType();
         return modelMapper.map(exchangeRates, listType);
     }
 
-    public ExchangeRate toModel (ExchangeRateReqDTO exchangeRateReqDTO) {
+    public ExchangeRate toModel(ExchangeRateReqDTO exchangeRateReqDTO) {
         ModelMapper modelMapper = new ModelMapper();
         modelMapper.addConverter(new AbstractConverter<String, Integer>() {
             @Override
@@ -64,7 +66,8 @@ public class ExchangeRateMapper {
 
     private Integer getCurrencyIdByCode(String code) {
         CurrencyResDTO currencyResDTO = currencyService.findByCode(code)
-                    .orElseThrow(() -> new RuntimeException("CURRENCY "+code+" NOT FOUND"));
+                .orElseThrow(() -> new RuntimeException("CURRENCY " + code + " NOT FOUND"));
         return currencyResDTO.getId();
     }
+
 }

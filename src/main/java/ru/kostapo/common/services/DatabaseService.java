@@ -1,10 +1,7 @@
-package ru.kostapo.services;
+package ru.kostapo.common;
 
 import java.sql.Connection;
-import java.sql.ResultSet;
 
 public interface DatabaseService {
-
     Connection getDataBaseConnection();
-
 }

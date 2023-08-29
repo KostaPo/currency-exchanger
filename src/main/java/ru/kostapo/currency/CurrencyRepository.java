@@ -1,10 +1,10 @@
 package ru.kostapo.repositories;
 
-import ru.kostapo.exceptions.DublicationException;
-import ru.kostapo.exceptions.NotFoundException;
-import ru.kostapo.mappers.ResultSetMapper;
-import ru.kostapo.models.Currency;
-import ru.kostapo.services.DatabaseServiceImpl;
+import ru.kostapo.common.exceptions.DublicationException;
+import ru.kostapo.common.exceptions.NotFoundException;
+import ru.kostapo.common.mapper.ResultSetMapper;
+import ru.kostapo.common.repositories.CrudRepository;
+import ru.kostapo.currency.Currency;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -18,16 +18,16 @@ import static org.sqlite.core.Codes.SQLITE_CONSTRAINT;
 
 public class CurrencyRepository implements CrudRepository<Currency> {
 
-    private final DatabaseServiceImpl databaseServiceImpl;
-    public CurrencyRepository() {
-        this.databaseServiceImpl = new DatabaseServiceImpl();
+    private final Connection connection;
+
+    public CurrencyRepository(Connection connection) {
+        this.connection = connection;
     }
 
     @Override
     public Optional<List<Currency>> findAll() {
         final String query = "SELECT * FROM Currencies";
-        try (Connection connection = databaseServiceImpl.getDataBaseConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.execute();
             ResultSet resultSet = statement.getResultSet();
             if (resultSet.isBeforeFirst()) {
@@ -45,9 +45,9 @@ public class CurrencyRepository implements CrudRepository<Currency> {
 
     @Override
     public Optional<Currency> findById(Integer id) {
-        final String query = "SELECT * FROM Currencies WHERE id = " + id.toString();
-        try (Connection connection = databaseServiceImpl.getDataBaseConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
+        final String query = "SELECT * FROM Currencies WHERE id = ?";
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setInt(1, id);
             statement.execute();
             ResultSet resultSet = statement.getResultSet();
             if (resultSet.isBeforeFirst()) {
@@ -65,14 +65,13 @@ public class CurrencyRepository implements CrudRepository<Currency> {
     @Override
     public Currency save(Currency currency) {
         final String query = "INSERT INTO Currencies (Code, FullName, Sign) VALUES (?,?,?)";
-        try (Connection connection = databaseServiceImpl.getDataBaseConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setString(1, currency.getCode());
             statement.setString(2, currency.getFullName());
             statement.setString(3, currency.getSign());
             statement.execute();
         } catch (SQLException ex) {
-            if(SQLITE_CONSTRAINT == ex.getErrorCode())
+            if (SQLITE_CONSTRAINT == ex.getErrorCode())
                 throw new DublicationException("ВАЛЮТА С ТАКИМ КОДОМ УЖЕ СУЩЕСТВУЕТ");
             throw new RuntimeException(ex);
         }
@@ -87,9 +86,9 @@ public class CurrencyRepository implements CrudRepository<Currency> {
 
     @Override
     public void delete(Integer id) {
-        final String query = "DELETE FROM Currencies WHERE ID = " + id.toString();
-        try (Connection connection = databaseServiceImpl.getDataBaseConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
+        final String query = "DELETE FROM Currencies WHERE ID = ?";
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setInt(1, id);
             statement.execute();
         } catch (SQLException ex) {
             throw new RuntimeException(ex);
@@ -97,9 +96,9 @@ public class CurrencyRepository implements CrudRepository<Currency> {
     }
 
     public Optional<Currency> findByCode(String code) {
-        final String query = "SELECT * FROM Currencies WHERE Code = '" + code + "'";
-        try (Connection connection = databaseServiceImpl.getDataBaseConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
+        final String query = "SELECT * FROM Currencies WHERE Code = ?";
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setString(1, code);
             statement.execute();
             ResultSet resultSet = statement.getResultSet();
             if (resultSet.isBeforeFirst()) {
@@ -112,20 +111,5 @@ public class CurrencyRepository implements CrudRepository<Currency> {
             throw new RuntimeException(ex);
         }
         return Optional.empty();
-    }
-
-    public boolean isContain(String key) {
-        final String query = "SELECT COUNT(*) > 0 AS contain FROM Currencies WHERE code='" + key + "'";
-        try (Connection connection = databaseServiceImpl.getDataBaseConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.execute();
-            ResultSet resultSet = statement.getResultSet();
-            if (resultSet.next()) {
-                return resultSet.getBoolean("contain");
-            }
-        } catch (SQLException ex) {
-            throw new RuntimeException(ex);
-        }
-        return false;
     }
 }

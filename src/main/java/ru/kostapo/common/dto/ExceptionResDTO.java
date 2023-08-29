@@ -1,4 +1,4 @@
-package ru.kostapo.dto;
+package ru.kostapo.common;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,6 +7,6 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ExceptionResEDTO {
+public class ExceptionResDTO {
     private String message;
 }

@@ -1,10 +1,10 @@
 package ru.kostapo.repositories;
 
-import ru.kostapo.exceptions.DublicationException;
-import ru.kostapo.exceptions.NotFoundException;
-import ru.kostapo.mappers.ResultSetMapper;
+import ru.kostapo.common.exceptions.DublicationException;
+import ru.kostapo.common.exceptions.NotFoundException;
+import ru.kostapo.common.mapper.ResultSetMapper;
+import ru.kostapo.common.repositories.CrudRepository;
 import ru.kostapo.models.ExchangeRate;
-import ru.kostapo.services.DatabaseServiceImpl;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -16,21 +16,18 @@ import java.util.Optional;
 
 import static org.sqlite.core.Codes.SQLITE_CONSTRAINT;
 
-public class ExchangeRateRepository implements CrudRepository<ExchangeRate>{
+public class ExchangeRateRepository implements CrudRepository<ExchangeRate> {
 
-    private final DatabaseServiceImpl databaseServiceImpl;
-    private final ResultSetMapper resultSetMapper;
+    private final Connection connection;
 
-    public ExchangeRateRepository() {
-        this.databaseServiceImpl = new DatabaseServiceImpl();
-        this.resultSetMapper = new ResultSetMapper();
+    public ExchangeRateRepository(Connection connection) {
+        this.connection = connection;
     }
 
     @Override
     public Optional<List<ExchangeRate>> findAll() {
         final String query = "SELECT * FROM ExchangeRates";
-        try (Connection connection = databaseServiceImpl.getDataBaseConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.execute();
             ResultSet resultSet = statement.getResultSet();
             if (resultSet.isBeforeFirst()) {
@@ -49,9 +46,9 @@ public class ExchangeRateRepository implements CrudRepository<ExchangeRate>{
 
     @Override
     public Optional<ExchangeRate> findById(Integer id) {
-        final String query = "SELECT * FROM ExchangeRates WHERE id = " + id.toString();
-        try (Connection connection = databaseServiceImpl.getDataBaseConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
+        final String query = "SELECT * FROM ExchangeRates WHERE id = ?";
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setInt(1, id);
             statement.execute();
             ResultSet resultSet = statement.getResultSet();
             if (resultSet.isBeforeFirst()) {
@@ -69,14 +66,13 @@ public class ExchangeRateRepository implements CrudRepository<ExchangeRate>{
     @Override
     public ExchangeRate save(ExchangeRate exchangeRate) {
         final String query = "INSERT INTO ExchangeRates (BaseCurrencyId, TargetCurrencyId, Rate) VALUES (?,?,?)";
-        try (Connection connection = databaseServiceImpl.getDataBaseConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setInt(1, exchangeRate.getBaseCurrencyId());
             statement.setInt(2, exchangeRate.getTargetCurrencyId());
             statement.setBigDecimal(3, exchangeRate.getRate());
             statement.execute();
         } catch (SQLException ex) {
-            if(SQLITE_CONSTRAINT == ex.getErrorCode())
+            if (SQLITE_CONSTRAINT == ex.getErrorCode())
                 throw new DublicationException("ВАЛЮТНАЯ ПАРА С ТАКИМ КОДОМ УЖЕ СУЩЕСТВУЕТ");
             throw new RuntimeException(ex);
         }
@@ -86,12 +82,12 @@ public class ExchangeRateRepository implements CrudRepository<ExchangeRate>{
 
     @Override
     public ExchangeRate update(ExchangeRate exchangeRate) {
-        final String query = "UPDATE ExchangeRates " +
-                "SET rate = "+exchangeRate.getRate()+
-                " WHERE BaseCurrencyId = +"+exchangeRate.getBaseCurrencyId()+
-                " AND TargetCurrencyId = "+exchangeRate.getTargetCurrencyId();
-        try (Connection connection = databaseServiceImpl.getDataBaseConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
+        final String query = "UPDATE ExchangeRates SET rate = ? WHERE BaseCurrencyId = ? AND TargetCurrencyId = ?";
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setBigDecimal(1, exchangeRate.getRate());
+            statement.setInt(2, exchangeRate.getBaseCurrencyId());
+            statement.setInt(3, exchangeRate.getTargetCurrencyId());
+            statement.execute();
             statement.execute();
         } catch (SQLException ex) {
             throw new NotFoundException("ВАЛЮТНАЯ ПАРА ОТСУТСТВУЕТ В БД");
@@ -102,9 +98,9 @@ public class ExchangeRateRepository implements CrudRepository<ExchangeRate>{
 
     @Override
     public void delete(Integer id) {
-        final String query = "DELETE FROM ExchangeRates WHERE id = " + id.toString();
-        try (Connection connection = databaseServiceImpl.getDataBaseConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
+        final String query = "DELETE FROM ExchangeRates WHERE id = ?";
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setInt(1, id);
             statement.execute();
         } catch (SQLException ex) {
             throw new RuntimeException(ex);
@@ -112,10 +108,10 @@ public class ExchangeRateRepository implements CrudRepository<ExchangeRate>{
     }
 
     public Optional<ExchangeRate> findByIntPair(Integer base, Integer target) {
-        final String query = "SELECT * FROM ExchangeRates " +
-                "WHERE BaseCurrencyId = " + base + " AND TargetCurrencyId = " + target;
-        try (Connection connection = databaseServiceImpl.getDataBaseConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
+        final String query = "SELECT * FROM ExchangeRates WHERE BaseCurrencyId = ? AND TargetCurrencyId = ?";
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setInt(1, base);
+            statement.setInt(2, target);
             statement.execute();
             ResultSet resultSet = statement.getResultSet();
             if (resultSet.isBeforeFirst()) {
@@ -131,13 +127,13 @@ public class ExchangeRateRepository implements CrudRepository<ExchangeRate>{
     }
 
     public Optional<ExchangeRate> findByStrPair(String base, String target) {
-        final String query = "SELECT er.* " +
-                "FROM ExchangeRates er " +
+        final String query = "SELECT er.* FROM ExchangeRates er " +
                 "JOIN Currencies base ON er.baseCurrencyId = base.id " +
                 "JOIN Currencies target ON er.targetCurrencyId = target.id " +
-                "WHERE base.code = '"+base+"' AND target.code = '"+target+"'";
-        try (Connection connection = databaseServiceImpl.getDataBaseConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
+                "WHERE base.code = ? AND target.code = ?";
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setString(1, base);
+            statement.setString(2, target);
             statement.execute();
             ResultSet resultSet = statement.getResultSet();
             if (resultSet.isBeforeFirst()) {
@@ -150,23 +146,5 @@ public class ExchangeRateRepository implements CrudRepository<ExchangeRate>{
             throw new RuntimeException(ex);
         }
         return Optional.empty();
-    }
-
-    public boolean isContain(String base, String target) {
-        final String query = "SELECT COUNT(*) > 0 AS contain " +
-                "FROM ExchangeRates " +
-                "WHERE BaseCurrencyId='"+base+"' " +
-                "AND TargetCurrencyId ='"+target+"'";
-        try (Connection connection = databaseServiceImpl.getDataBaseConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.execute();
-            ResultSet resultSet = statement.getResultSet();
-            if (resultSet.next()) {
-                return resultSet.getBoolean("contain");
-            }
-        } catch (SQLException ex) {
-            throw new RuntimeException(ex);
-        }
-        return false;
     }
 }

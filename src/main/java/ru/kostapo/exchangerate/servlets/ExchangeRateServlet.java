@@ -2,12 +2,12 @@ package ru.kostapo.servlets;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ru.kostapo.dto.ExceptionResEDTO;
-import ru.kostapo.dto.ExchangeRateReqDTO;
-import ru.kostapo.dto.ExchangeRateResDTO;
-import ru.kostapo.exceptions.BadParameterException;
-import ru.kostapo.exceptions.DatabaseException;
-import ru.kostapo.exceptions.NotFoundException;
-import ru.kostapo.services.ExchangeRateService;
+import ru.kostapo.exchangerate.dto.ExchangeRateReqDTO;
+import ru.kostapo.exchangerate.dto.ExchangeRateResDTO;
+import ru.kostapo.common.exceptions.BadParameterException;
+import ru.kostapo.common.exceptions.DatabaseException;
+import ru.kostapo.common.exceptions.NotFoundException;
+import ru.kostapo.exchangerate.ExchangeRateService;
 import ru.kostapo.utils.StringUtils;
 
 import javax.servlet.ServletConfig;
@@ -129,4 +129,5 @@ public class ExchangeRateServlet extends HttpServlet {
             objectMapper.writeValue(response.getOutputStream(), new ExceptionResEDTO(ex.getMessage()));
         }
     }
+
 }

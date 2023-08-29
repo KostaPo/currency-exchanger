@@ -1,7 +1,7 @@
-package ru.kostapo.services;
+package ru.kostapo.common;
 
 import org.sqlite.SQLiteConfig;
-import ru.kostapo.exceptions.DatabaseException;
+import ru.kostapo.common.exceptions.DatabaseException;
 
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -40,4 +40,5 @@ public class DatabaseServiceImpl implements DatabaseService {
         }
         return null;
     }
+
 }
